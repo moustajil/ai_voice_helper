@@ -61,6 +61,7 @@ flutter:
   assets:
     - assets/images/
     - assets/sounds/
+   
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -76,8 +77,8 @@ flutter:
   fonts:
     - family: Cera Pro
       fonts:
-        - asset: assets/Cera-Pro-Bold.otf
-        - asset: assets/Cera-Pro-Medium.otf
+        - asset: assets/font/Cera-Pro-Bold.otf
+        - asset: assets/font/Cera-Pro-Medium.otf
           style: italic
   #   - family: Trajan Pro
   #     fonts:
