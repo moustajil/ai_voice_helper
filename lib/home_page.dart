@@ -1,6 +1,8 @@
 import 'package:aivoicehelper/Pallet.dart';
 import 'package:aivoicehelper/Widget/FeiterBox.dart';
 import 'package:flutter/material.dart';
+import 'package:speech_to_text/speech_recognition_result.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -10,6 +12,47 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final SpeechToText _speechToText = SpeechToText();
+  bool _isListening = false;
+  String _lastWords = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _initSpeech();
+  }
+
+  Future<void> _initSpeech() async {
+    await _speechToText.initialize();
+    setState(() {});
+  }
+
+  void _startListening() async {
+    await _speechToText.listen(onResult: _onSpeechResult);
+    setState(() {
+      _isListening = true;
+    });
+  }
+
+  void _stopListening() async {
+    await _speechToText.stop();
+    setState(() {
+      _isListening = false;
+    });
+  }
+
+  void _onSpeechResult(SpeechRecognitionResult result) {
+    setState(() {
+      _lastWords = result.recognizedWords;
+    });
+  }
+
+  @override
+  void dispose() {
+    _speechToText.stop();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,28 +67,22 @@ class _HomePageState extends State<HomePage> {
             fontWeight: FontWeight.w500,
           ),
         ),
-        leading: const Icon(Icons.menu),
+        leading: const Icon(Icons.menu, color: Colors.black),
         backgroundColor: Colors.white,
         elevation: 0,
       ),
-      body: SingleChildScrollView( // <--- Scrollable for more Feiterboxes
+      body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Stack(
-              children: [
-                Center(
-                  child: Container(
-                    width: 120,
-                    height: 120,
-                    margin: const EdgeInsets.all(4),
-                    child: Image.asset(
-                      "assets/images/ai-voice-generator.png",
-                      width: 40,
-                    ),
-                  ),
-                ),
-              ],
+            const SizedBox(height: 20),
+            Center(
+              child: Container(
+                width: 120,
+                height: 120,
+                margin: const EdgeInsets.all(4),
+                child: Image.asset("assets/images/ai-voice-generator.png"),
+              ),
             ),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -65,6 +102,20 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
 
+            /// Display recognized words
+            if (_lastWords.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  "You said: $_lastWords",
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey.shade800,
+                  ),
+                ),
+              ),
+
+            /// FeiterBoxes
             Feiterbox(
               color: Colors.blue.shade100,
               title: "ChatGPT",
@@ -88,6 +139,10 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 30),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _isListening ? _stopListening : _startListening,
+        child: Icon(_isListening ? Icons.mic_off : Icons.mic),
       ),
     );
   }
